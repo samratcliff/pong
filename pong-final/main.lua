@@ -49,6 +49,7 @@ VIRTUAL_HEIGHT = 243
 
 -- paddle movement speed
 PADDLE_SPEED = 200
+PADDLE_SPEED_CPU = 150
 
 --[[
     Called just once at the beginning of the game; used to set up
@@ -223,6 +224,25 @@ function love.update(dt)
                 ball:reset()
             end
         end
+
+            -- player 2
+
+        --offset = math.random(dt) % 15 > 0 and 0 or 10 -- 1/15 times, make paddle 2 follow ball slower to give player 1 a chance
+        offset = 2
+
+
+        -- only move once ball is over 1/4 of the way to simulate reaction time
+        if ball.dx > 0 and ball.x > VIRTUAL_WIDTH / 4 and player2.y > ball.y + offset then
+            player2.dy = -PADDLE_SPEED_CPU
+        elseif ball.dx > 0 and ball.x > VIRTUAL_WIDTH / 4 and player2.y < ball.y - offset then
+            player2.dy = PADDLE_SPEED_CPU
+        elseif ball.dx < 0 and player2.y > (VIRTUAL_HEIGHT / 2) + 5 then  -- recenter when ball is moving to player 2
+            player2.dy = -PADDLE_SPEED_CPU
+        elseif ball.dx < 0 and player2.y < (VIRTUAL_HEIGHT / 2) - 5 / 2 then   
+            player2.dy = PADDLE_SPEED_CPU       
+        else
+            player2.dy = 0
+        end
     end
 
     --
@@ -235,15 +255,6 @@ function love.update(dt)
         player1.dy = PADDLE_SPEED
     else
         player1.dy = 0
-    end
-
-    -- player 2
-    if love.keyboard.isDown('up') then
-        player2.dy = -PADDLE_SPEED
-    elseif love.keyboard.isDown('down') then
-        player2.dy = PADDLE_SPEED
-    else
-        player2.dy = 0
     end
 
     -- update our ball based on its DX and DY only if we're in play state;
@@ -316,7 +327,11 @@ function love.draw()
         love.graphics.setFont(smallFont)
         love.graphics.printf('Player ' .. tostring(servingPlayer) .. "'s serve!", 
             0, 10, VIRTUAL_WIDTH, 'center')
-        love.graphics.printf('Press Enter to serve!', 0, 20, VIRTUAL_WIDTH, 'center')
+        if servingPlayer == 1 then    
+            love.graphics.printf('Press Enter to serve!', 0, 20, VIRTUAL_WIDTH, 'center')
+        else
+            love.graphics.printf('Press Enter when ready!', 0, 20, VIRTUAL_WIDTH, 'center')
+        end
     elseif gameState == 'play' then
         -- no UI messages to display in play
     elseif gameState == 'done' then
